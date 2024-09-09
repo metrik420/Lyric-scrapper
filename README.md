@@ -11,10 +11,15 @@ This Python Flask application allows users to search for song lyrics using a sim
 
 ## File Structure
 lyric-scraper/
+
 ├── scrappy.py
+
 ├── requirements.txt
+
 ├── templates/
+
 │   └── index.html
+
 └── README.md
 
 ## Installation 
