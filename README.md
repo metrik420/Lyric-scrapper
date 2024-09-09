@@ -9,7 +9,8 @@ This Python Flask application allows users to search for song lyrics using a sim
 - Requests
 - BeautifulSoup4
 
-##Installation 
+## Installation 
+
 Instructions:
 Ensure the user has Python 3 installed.
 
