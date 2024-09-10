@@ -1,19 +1,42 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify, session
 import requests
 from bs4 import BeautifulSoup
+import time
+import random
 
 app = Flask(__name__)
+app.secret_key = 'supersecretkey'  # Required for session handling
+
+# List of User-Agents to rotate
+user_agents = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
+    "Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Mobile Safari/537.36",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile Safari/604.1",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"
+]
+
+def get_random_headers():
+    """Generate random headers for each request."""
+    headers = {
+        "User-Agent": random.choice(user_agents),
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+    }
+    return headers
 
 def fetch_lyrics(url, artist_name):
-    """Fetch song lyrics from the provided URL."""
+    """Fetch song lyrics and update progress, with random delays and headers."""
     try:
-        print(f"Fetching lyrics from: {url}")  # Debugging log
-        response = requests.get(url)
-        response.raise_for_status()  # Check if request was successful
+        print(f"Fetching lyrics from: {url}")
+        response = requests.get(url, headers=get_random_headers())
+        response.raise_for_status()
         soup = BeautifulSoup(response.content, "html.parser")
         tables = soup.find_all("table", {"class": "table table-condensed"})
         
         table_data = []
+        total_songs = len(tables)
         for i, table in enumerate(tables, start=1):
             rows = table.find_all("tr")
             for row in rows:
@@ -21,14 +44,17 @@ def fetch_lyrics(url, artist_name):
                 if link:
                     song_title = link.text.strip()
                     song_url = link.get("href")
-                    if song_url:
-                        if song_url.startswith("/"):
-                            song_url = f"https://www.azlyrics.com{song_url}"
-                        print(f"Fetching lyrics for: {song_title}")
-                        lyrics = fetch_song_lyrics(song_url)  # Fetch lyrics for each song
-                        print(f"Lyrics fetched: {lyrics[:100]}")  # Debug: first 100 characters of lyrics
-                        table_data.append([i, artist_name, song_title, song_url, lyrics])
-        print(f"Fetched {len(table_data)} songs for artist: {artist_name}")  # Debug
+                    if song_url and song_url.startswith("/"):
+                        song_url = f"https://www.azlyrics.com{song_url}"
+                    lyrics = fetch_song_lyrics(song_url)
+                    table_data.append([i, artist_name, song_title, song_url, lyrics])
+                    
+                    # Simulate random delay to avoid detection as a bot
+                    progress = int((i / total_songs) * 100)
+                    session['progress'] = progress
+                    delay = random.uniform(2, 5)  # Random delay between 2 and 5 seconds
+                    print(f"Sleeping for {delay:.2f} seconds...")
+                    time.sleep(delay)
         return table_data
     
     except requests.RequestException as e:
@@ -38,24 +64,27 @@ def fetch_lyrics(url, artist_name):
 def fetch_song_lyrics(url):
     """Fetch the lyrics from the song URL."""
     try:
-        print(f"Fetching song from URL: {url}")  # Debugging log
-        response = requests.get(url)
-        response.raise_for_status()  # Check if request was successful
+        print(f"Fetching song from URL: {url}")
+        response = requests.get(url, headers=get_random_headers())
+        response.raise_for_status()
         soup = BeautifulSoup(response.content, "html.parser")
         
         # The lyrics are usually within a div after certain elements (ads, scripts, etc.)
         lyrics_div = soup.find("div", {"class": "col-xs-12 col-lg-8 text-center"})
         
         if lyrics_div:
-            # Find the correct div which contains the lyrics
-            lyrics = lyrics_div.find_all("div")[6].get_text(strip=True)  # Lyrics content
+            lyrics = lyrics_div.find_all("div")[6].get_text(strip=True)
             return lyrics
-        
         return "Lyrics not found"
     
     except requests.RequestException as e:
         print(f"Error fetching lyrics: {e}")
         return "Error fetching lyrics"
+
+@app.route('/progress')
+def progress():
+    """Endpoint to return progress."""
+    return jsonify(progress=session.get('progress', 0))
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -63,12 +92,9 @@ def index():
     error = None
     if request.method == 'POST':
         artist_name = request.form['artist_name'].strip().replace(" ", "+")
-        url = f"https://search.azlyrics.com/search.php?q={artist_name}&w=lyrics&p=1&x=7212ca797bf201758b9641f763c67f2c88a4bc8f3ce6c933097b8401e6ca9453"
-        print(f"Searching for artist: {artist_name}")  # Debugging log
+        url = f"https://search.azlyrics.com/search.php?q={artist_name}&w=lyrics"
         lyrics_data = fetch_lyrics(url, artist_name)
-        if isinstance(lyrics_data, str):  # Check if there was an error
-            error = lyrics_data
-            lyrics_data = None
+        session['progress'] = 100  # Set to 100% once lyrics are fetched
     return render_template('index.html', lyrics_data=lyrics_data, error=error)
 
 if __name__ == '__main__':
