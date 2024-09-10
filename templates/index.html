@@ -1,200 +1,71 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Lyric Search with Progress Bar</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyrics Scraper</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f0f2f5;
-            margin: 0;
-            padding: 0;
-            color: #333;
+            font-family: Arial, sans-serif;
+            margin: 20px;
         }
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 20px;
-            background: #fff;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
+        label {
+            display: block;
+            margin: 10px 0 5px;
         }
-        h1 {
-            color: #4CAF50;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2rem;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        label, input {
-            font-size: 1.1rem;
-            width: 100%;
-            max-width: 350px;
-        }
-        input[type="text"] {
+        input[type="text"], input[type="submit"] {
             padding: 10px;
-            margin: 10px 0;
-            width: 100%;
-            max-width: 350px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 1.1rem;
-            background-color: #4CAF50;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-            max-width: 200px;
-        }
-        button:hover {
-            background-color: #45a049;
+            font-size: 16px;
+            margin-bottom: 20px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
-            overflow-x: auto;
-            display: block;
-            white-space: nowrap;
+            margin-top: 20px;
         }
         th, td {
-            padding: 12px;
+            border: 1px solid #ddd;
+            padding: 8px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
         }
         th {
-            background-color: #4CAF50;
-            color: #fff;
-            font-size: 1rem;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-            transition: background-color 0.3s ease;
-        }
-        #progress-container {
-            width: 100%;
-            background-color: #f3f3f3;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        #progress-bar {
-            width: 0%;
-            height: 30px;
-            background-color: #4CAF50;
-            text-align: center;
-            color: white;
-            border-radius: 5px;
-        }
-        #progress-text {
-            margin-top: 10px;
-            font-size: 16px;
-            text-align: center;
-        }
-        /* Mobile responsiveness */
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 1.5rem;
-            }
-            th, td {
-                padding: 10px;
-                font-size: 0.9rem;
-            }
-            input[type="text"], button {
-                width: 100%;
-                max-width: none;
-            }
+            background-color: #f2f2f2;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Search for Lyrics</h1>
-        <form method="post">
-            <label for="artist_name">Enter artist name:</label>
-            <input type="text" id="artist_name" name="artist_name" required>
-            <button type="submit">Search</button>
-        </form>
+    <h1>Fetch Song Lyrics</h1>
+    <form method="POST">
+        <label for="artist_name">Artist Name:</label>
+        <input type="text" id="artist_name" name="artist_name" required>
+        
+        <label for="custom_url">Custom URL (optional):</label>
+        <input type="text" id="custom_url" name="custom_url" placeholder="Enter a custom URL (optional)">
+        
+        <input type="submit" value="Fetch Lyrics">
+    </form>
 
-        <!-- Progress Bar -->
-        <div id="progress-container" style="display: none;">
-            <div id="progress-bar">0%</div>
-        </div>
-        <div id="progress-text"></div>
-
-        <!-- Table for results -->
-        {% if lyrics_data %}
-        <div style="overflow-x:auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Artist</th>
-                        <th>Song Title</th>
-                        <th>Song Lyrics</th>
-                        <th>URL</th>
-                        <th>Listen</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in lyrics_data %}
-                    <tr>
-                        <td>{{ item[0] }}</td>
-                        <td>{{ item[1] }}</td>
-                        <td>{{ item[2] }}</td>
-                        <td>{{ item[4] }}</td> <!-- Song Lyrics -->
-                        <td><a href="{{ item[3] }}" target="_blank">Link</a></td>
-                        <td><a href="{{ item[3] }}" target="_blank">Listen</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
-    </div>
-
-    <!-- JavaScript to handle progress -->
-    <script>
-        const progressBar = document.getElementById('progress-bar');
-        const progressContainer = document.getElementById('progress-container');
-        const progressText = document.getElementById('progress-text');
-
-        async function updateProgress() {
-            const response = await fetch('/progress');
-            const data = await response.json();
-            const progress = data.progress;
-            
-            progressBar.style.width = progress + '%';
-            progressBar.innerText = progress + '%';
-            
-            if (progress < 100) {
-                setTimeout(updateProgress, 1000);  // Keep checking every second
-            } else {
-                progressText.innerText = 'Loading Complete!';
-            }
-        }
-
-        // Start tracking progress when form is submitted
-        document.querySelector('form').addEventListener('submit', (e) => {
-            progressContainer.style.display = 'block';  // Show the progress bar
-            progressBar.style.width = '0%';  // Reset progress
-            progressText.innerText = '';
-            setTimeout(updateProgress, 1000);  // Start updating progress after 1 second
-        });
-    </script>
+    {% if lyrics_data %}
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Artist</th>
+                <th>Song Title</th>
+                <th>Song URL</th>
+                <th>Lyrics</th>
+            </tr>
+            {% for item in lyrics_data %}
+            <tr>
+                <td>{{ item[0] }}</td>
+                <td>{{ item[1] }}</td>
+                <td>{{ item[2] }}</td>
+                <td><a href="{{ item[3] }}" target="_blank">Link</a></td>
+                <td>{{ item[4] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% elif error %}
+        <p>Error: {{ error }}</p>
+    {% endif %}
 </body>
 </html>
