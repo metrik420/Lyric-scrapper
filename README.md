@@ -27,8 +27,12 @@ lyric-scraper/
 Instructions:
 Ensure the user has Python 3 installed.
 
-After downloading or cloning the project, the user needs to run:pip install -r requirements.txt
+After downloading or cloning the project, the user needs to run:
 
-Then, they can run the application using:python3 scrappy.py
+pip install -r requirements.txt
 
-The user can now navigate to http://127.0.0.1:1990 to access the web interface.
+Then, they can run the application using:
+
+python3 scrappy.py
+
+The user can now navigate to http://127.0.0.1:1990 or http://Your_Devices_IP to access the web interface.
