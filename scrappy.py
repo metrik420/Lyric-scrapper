@@ -33,30 +33,42 @@ def fetch_lyrics(url, artist_name):
         response = requests.get(url, headers=get_random_headers())
         response.raise_for_status()
         soup = BeautifulSoup(response.content, "html.parser")
-        tables = soup.find_all("table", {"class": "table table-condensed"})
-        
+
+        # Handle different lyric sites
+        if "azlyrics.com" in url:
+            tables = soup.find_all("table", {"class": "table table-condensed"})
+        elif "genius.com" in url:
+            # Assuming Genius uses a 'lyrics' div
+            tables = soup.find_all("div", {"class": "lyrics"})
+        else:
+            tables = None  # Handle other sites as needed
+
         table_data = []
-        total_songs = len(tables)
-        for i, table in enumerate(tables, start=1):
-            rows = table.find_all("tr")
-            for row in rows:
-                link = row.find("a")
-                if link:
-                    song_title = link.text.strip()
-                    song_url = link.get("href")
-                    if song_url and song_url.startswith("/"):
-                        song_url = f"https://www.azlyrics.com{song_url}"
-                    lyrics = fetch_song_lyrics(song_url)
-                    table_data.append([i, artist_name, song_title, song_url, lyrics])
-                    
-                    # Simulate random delay to avoid detection as a bot
-                    progress = int((i / total_songs) * 100)
-                    session['progress'] = progress
-                    delay = random.uniform(2, 5)  # Random delay between 2 and 5 seconds
-                    print(f"Sleeping for {delay:.2f} seconds...")
-                    time.sleep(delay)
+        if tables:
+            total_songs = len(tables)
+            for i, table in enumerate(tables, start=1):
+                rows = table.find_all("tr")
+                for row in rows:
+                    link = row.find("a")
+                    if link:
+                        song_title = link.text.strip()
+                        song_url = link.get("href")
+                        if song_url and song_url.startswith("/"):
+                            song_url = f"https://www.azlyrics.com{song_url}"
+                        lyrics = fetch_song_lyrics(song_url)
+                        table_data.append([i, artist_name, song_title, song_url, lyrics])
+
+                        # Simulate random delay to avoid detection as a bot
+                        progress = int((i / total_songs) * 100)
+                        session['progress'] = progress
+                        delay = random.uniform(2, 5)  # Random delay between 2 and 5 seconds
+                        print(f"Sleeping for {delay:.2f} seconds...")
+                        time.sleep(delay)
+        else:
+            return "No lyrics found for this URL."
+
         return table_data
-    
+
     except requests.RequestException as e:
         print(f"Error fetching lyrics page: {e}")
         return f"Error fetching data: {e}"
@@ -68,15 +80,15 @@ def fetch_song_lyrics(url):
         response = requests.get(url, headers=get_random_headers())
         response.raise_for_status()
         soup = BeautifulSoup(response.content, "html.parser")
-        
+
         # The lyrics are usually within a div after certain elements (ads, scripts, etc.)
         lyrics_div = soup.find("div", {"class": "col-xs-12 col-lg-8 text-center"})
-        
+
         if lyrics_div:
             lyrics = lyrics_div.find_all("div")[6].get_text(strip=True)
             return lyrics
         return "Lyrics not found"
-    
+
     except requests.RequestException as e:
         print(f"Error fetching lyrics: {e}")
         return "Error fetching lyrics"
@@ -92,7 +104,14 @@ def index():
     error = None
     if request.method == 'POST':
         artist_name = request.form['artist_name'].strip().replace(" ", "+")
-        url = f"https://search.azlyrics.com/search.php?q={artist_name}&w=lyrics"
+        custom_url = request.form.get('custom_url')
+
+        # If a custom URL is provided, use it; otherwise, construct the Azlyrics search URL
+        if custom_url and custom_url.strip():
+            url = custom_url.strip()
+        else:
+            url = f"https://search.azlyrics.com/search.php?q={artist_name}&w=lyrics"
+
         lyrics_data = fetch_lyrics(url, artist_name)
         session['progress'] = 100  # Set to 100% once lyrics are fetched
     return render_template('index.html', lyrics_data=lyrics_data, error=error)
