@@ -35,4 +35,5 @@ Then, they can run the application using:
 
 python3 scrappy.py
 
-The user can now navigate to http://127.0.0.1:1990 or http://Your_Devices_IP to access the web interface.
+The user can now navigate to http://127.0.0.1:1990 or http://Your_Devices_IP to access the web interface. 
+
