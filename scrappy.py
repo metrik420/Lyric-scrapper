@@ -1,120 +1,94 @@
-from flask import Flask, request, render_template, jsonify, session
+from flask import Flask, render_template, request
 import requests
 from bs4 import BeautifulSoup
 import time
 import random
+import urllib.parse
 
 app = Flask(__name__)
-app.secret_key = 'supersecretkey'  # Required for session handling
 
-# List of User-Agents to rotate
-user_agents = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Safari/605.1.15",
-    "Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Mobile Safari/537.36",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile Safari/604.1",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36"
-]
-
-def get_random_headers():
-    """Generate random headers for each request."""
-    headers = {
-        "User-Agent": random.choice(user_agents),
-        "Accept-Language": "en-US,en;q=0.9",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Connection": "keep-alive",
-    }
-    return headers
-
-def fetch_lyrics(url, artist_name):
-    """Fetch song lyrics and update progress, with random delays and headers."""
+# Helper function to fetch lyrics with proper headers and delays
+def fetch_lyrics(url):
+    """
+    Fetches lyrics from the given URL.
+    Args:
+        url (str): The URL to fetch data from.
+    Returns:
+        list: A list of tuples containing song titles and their corresponding URLs.
+    """
     try:
-        print(f"Fetching lyrics from: {url}")
-        response = requests.get(url, headers=get_random_headers())
+        # Randomize delay to mimic human behavior and avoid detection as a bot
+        time.sleep(random.uniform(2.0, 5.0))
+        
+        # Send a GET request to the provided URL with a User-Agent header
+        response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
+        
+        # Raise an exception for HTTP errors
         response.raise_for_status()
-        soup = BeautifulSoup(response.content, "html.parser")
+        
+        # Parse the content of the response using BeautifulSoup
+        content = response.content
+        soup = BeautifulSoup(content, "html.parser")
 
-        # Handle different lyric sites
-        if "azlyrics.com" in url:
-            tables = soup.find_all("table", {"class": "table table-condensed"})
-        elif "genius.com" in url:
-            # Assuming Genius uses a 'lyrics' div
-            tables = soup.find_all("div", {"class": "lyrics"})
-        else:
-            tables = None  # Handle other sites as needed
+        # Find all tables with the class "table table-condensed"
+        tables = soup.find_all("table", {"class": "table table-condensed"})
 
-        table_data = []
-        if tables:
-            total_songs = len(tables)
-            for i, table in enumerate(tables, start=1):
-                rows = table.find_all("tr")
-                for row in rows:
-                    link = row.find("a")
-                    if link:
-                        song_title = link.text.strip()
-                        song_url = link.get("href")
-                        if song_url and song_url.startswith("/"):
-                            song_url = f"https://www.azlyrics.com{song_url}"
-                        lyrics = fetch_song_lyrics(song_url)
-                        table_data.append([i, artist_name, song_title, song_url, lyrics])
+        table_data = set()  # Use a set to store unique song title and URL pairs
 
-                        # Simulate random delay to avoid detection as a bot
-                        progress = int((i / total_songs) * 100)
-                        session['progress'] = progress
-                        delay = random.uniform(2, 5)  # Random delay between 2 and 5 seconds
-                        print(f"Sleeping for {delay:.2f} seconds...")
-                        time.sleep(delay)
-        else:
-            return "No lyrics found for this URL."
+        # Iterate over each table found
+        for table in tables:
+            rows = table.find_all("tr")  # Find all rows in the table
+            for row in rows:
+                link = row.find("a")  # Find anchor tags within the rows
+                if link:
+                    song_title = link.text.strip()  # Extract and clean the song title
+                    song_url = link.get("href")  # Get the URL from the anchor tag
+                    if song_url:
+                        # Filter out links that are not related to lyrics
+                        if "/lyrics/" in song_url:
+                            # Construct the full URL for the song
+                            full_url = f"https://www.azlyrics.com{song_url}"
+                            # Add the song title and URL as a tuple to the set
+                            table_data.add((song_title, full_url))
 
-        return table_data
+        # Convert the set of tuples back to a list
+        table_data = list(table_data)
 
+        return table_data  # Return the list of song titles and URLs
     except requests.RequestException as e:
-        print(f"Error fetching lyrics page: {e}")
-        return f"Error fetching data: {e}"
-
-def fetch_song_lyrics(url):
-    """Fetch the lyrics from the song URL."""
-    try:
-        print(f"Fetching song from URL: {url}")
-        response = requests.get(url, headers=get_random_headers())
-        response.raise_for_status()
-        soup = BeautifulSoup(response.content, "html.parser")
-
-        # The lyrics are usually within a div after certain elements (ads, scripts, etc.)
-        lyrics_div = soup.find("div", {"class": "col-xs-12 col-lg-8 text-center"})
-
-        if lyrics_div:
-            lyrics = lyrics_div.find_all("div")[6].get_text(strip=True)
-            return lyrics
-        return "Lyrics not found"
-
-    except requests.RequestException as e:
+        # Print error message if there is an issue with the request
         print(f"Error fetching lyrics: {e}")
-        return "Error fetching lyrics"
-
-@app.route('/progress')
-def progress():
-    """Endpoint to return progress."""
-    return jsonify(progress=session.get('progress', 0))
+        return []  # Return an empty list in case of error
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    lyrics_data = None
-    error = None
+    """
+    Handles GET and POST requests to the root URL.
+    Returns:
+        str: Rendered HTML template.
+    """
     if request.method == 'POST':
-        artist_name = request.form['artist_name'].strip().replace(" ", "+")
-        custom_url = request.form.get('custom_url')
+        # Get the artist name from the form submission
+        artist_name = request.form['artist']
+        # Encode the artist name to be safely included in the URL
+        encoded_artist_name = urllib.parse.quote_plus(artist_name)
+        # Construct the search URL with the encoded artist name
+        search_url = f"https://search.azlyrics.com/search.php?q={encoded_artist_name}&x=7a9e51768f99ae8e4928f9b8f04dbb638c8bdad95502d5f706036bb982e19244"
+        print(f"Constructed URL: {search_url}")
 
-        # If a custom URL is provided, use it; otherwise, construct the Azlyrics search URL
-        if custom_url and custom_url.strip():
-            url = custom_url.strip()
-        else:
-            url = f"https://search.azlyrics.com/search.php?q={artist_name}&w=lyrics"
-
-        lyrics_data = fetch_lyrics(url, artist_name)
-        session['progress'] = 100  # Set to 100% once lyrics are fetched
-    return render_template('index.html', lyrics_data=lyrics_data, error=error)
+        # Fetch lyrics data using the constructed search URL
+        lyrics_data = fetch_lyrics(search_url)
+        
+        if not lyrics_data:
+            # Render the template with an error message if no data was found or an error occurred
+            return render_template('index.html', error="No songs found or an error occurred.")
+        
+        # Render the template with the fetched lyrics data
+        return render_template('index.html', lyrics_data=lyrics_data, artist_name=artist_name)
+    
+    # Render the template for GET requests
+    return render_template('index.html')
 
 if __name__ == '__main__':
+    # Run the Flask application on all network interfaces, port 1990, with debugging enabled
     app.run(host='0.0.0.0', port=1990, debug=True)
