@@ -22,6 +22,8 @@ Lyric-scrapper/
 
 ## Installation
 
+First, ensure you have Python 3.x installed. Open your terminal or command prompt and navigate to the directory where you want to set up the project
+
 1. **Clone the Repository**
 
    ```bash
