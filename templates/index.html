@@ -1,71 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Character encoding for the document -->
     <meta charset="UTF-8">
+    <!-- Viewport settings to ensure proper scaling on different devices -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lyrics Scraper</title>
+    <title>Scrappy Lyrics Search</title>
     <style>
+        /* Base styling for the body element */
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            font-family: 'Arial', sans-serif; /* Font type */
+            margin: 0; /* Remove default margin */
+            padding: 0; /* Remove default padding */
+            background: #f0f2f5; /* Background color */
+            color: #333; /* Text color */
         }
+
+        /* Container styling for the main content area */
+        .container {
+            width: 90%; /* Width relative to the viewport width */
+            max-width: 1200px; /* Maximum width */
+            margin: 30px auto; /* Center the container and add margin */
+            background: #fff; /* Background color */
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Shadow effect */
+            padding: 20px; /* Padding inside the container */
+            animation: fadeIn 1s ease-out; /* Fade-in animation */
+        }
+
+        /* Styling for the sticky banner that displays error messages */
+        .sticky-banner {
+            background-color: #f8d7da; /* Background color for errors */
+            color: #721c24; /* Text color */
+            padding: 15px; /* Padding inside the banner */
+            border: 1px solid #f5c6cb; /* Border color */
+            border-radius: 5px; /* Rounded corners */
+            margin-bottom: 20px; /* Margin below the banner */
+            position: relative; /* Positioning context for the close button */
+            transition: all 0.3s ease-in-out; /* Smooth transition for show/hide */
+            opacity: 0; /* Initially hidden */
+            transform: translateY(-20px); /* Position off-screen */
+        }
+        
+        /* Styling for the sticky banner when it is active */
+        .sticky-banner.active {
+            opacity: 1; /* Make visible */
+            transform: translateY(0); /* Move into view */
+        }
+        
+        /* Styling for the close button on the banner */
+        .close-btn {
+            cursor: pointer; /* Pointer cursor on hover */
+            float: right; /* Align to the right */
+            font-weight: bold; /* Bold text */
+            color: #721c24; /* Text color */
+            transition: color 0.3s ease; /* Smooth color transition */
+        }
+        
+        /* Styling for the close button on hover */
+        .close-btn:hover {
+            color: #a71d2a; /* Darker color on hover */
+        }
+        
+        /* Basic styling for the form */
+        form {
+            display: flex; /* Flexbox for layout */
+            flex-direction: column; /* Stack items vertically */
+            gap: 10px; /* Space between form elements */
+        }
+        
+        /* Styling for form labels */
         label {
-            display: block;
-            margin: 10px 0 5px;
+            font-size: 16px; /* Font size */
+            font-weight: bold; /* Bold text */
         }
-        input[type="text"], input[type="submit"] {
-            padding: 10px;
-            font-size: 16px;
-            margin-bottom: 20px;
+        
+        /* Styling for text input fields */
+        input[type="text"] {
+            padding: 10px; /* Padding inside the input */
+            border: 1px solid #ddd; /* Border color */
+            border-radius: 5px; /* Rounded corners */
+            font-size: 16px; /* Font size */
+            transition: border-color 0.3s ease; /* Smooth border color transition */
         }
+        
+        /* Styling for text input fields when focused */
+        input[type="text"]:focus {
+            border-color: #007bff; /* Highlight border on focus */
+            outline: none; /* Remove default outline */
+        }
+        
+        /* Basic styling for buttons */
+        button {
+            background-color: #007bff; /* Background color */
+            color: #fff; /* Text color */
+            border: none; /* No border */
+            padding: 10px 15px; /* Padding inside the button */
+            border-radius: 5px; /* Rounded corners */
+            font-size: 16px; /* Font size */
+            cursor: pointer; /* Pointer cursor on hover */
+            transition: background-color 0.3s ease; /* Smooth background color transition */
+        }
+        
+        /* Styling for buttons on hover */
+        button:hover {
+            background-color: #0056b3; /* Darker background color on hover */
+        }
+        
+        /* Basic styling for tables */
         table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+            width: 100%; /* Full width */
+            border-collapse: collapse; /* Collapse borders */
+            margin-top: 20px; /* Space above the table */
+            animation: fadeIn 1s ease-out; /* Fade-in animation */
         }
+        
+        /* Styling for table borders */
+        table, th, td {
+            border: 1px solid #ddd; /* Border color */
+        }
+        
+        /* Styling for table headers and cells */
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
+            padding: 12px; /* Padding inside cells */
+            text-align: left; /* Align text to the left */
+            transition: background-color 0.3s ease; /* Smooth background color transition */
         }
+        
+        /* Styling for table headers */
         th {
-            background-color: #f2f2f2;
+            background-color: #007bff; /* Background color */
+            color: #fff; /* Text color */
+        }
+        
+        /* Zebra striping for table rows */
+        tr:nth-child(even) {
+            background-color: #f9f9f9; /* Background color for even rows */
+        }
+        
+        /* Highlight table row on hover */
+        tr:hover {
+            background-color: #f1f1f1; /* Highlight color on hover */
+        }
+        
+        /* Responsive design for smaller screens */
+        @media (max-width: 600px) {
+            table {
+                font-size: 14px; /* Smaller font size for tables */
+            }
+            input[type="text"], button {
+                font-size: 14px; /* Smaller font size for inputs and buttons */
+            }
+        }
+        
+        /* Keyframes for fade-in animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0; /* Start fully transparent */
+                transform: translateY(20px); /* Start 20px below */
+            }
+            to {
+                opacity: 1; /* End fully opaque */
+                transform: translateY(0); /* End at normal position */
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Fetch Song Lyrics</h1>
-    <form method="POST">
-        <label for="artist_name">Artist Name:</label>
-        <input type="text" id="artist_name" name="artist_name" required>
+    <!-- Main content container -->
+    <div class="container">
+        <!-- Error message banner -->
+        <div class="sticky-banner" id="errorBanner">
+            <!-- Close button to hide the banner -->
+            <span class="close-btn" onclick="document.getElementById('errorBanner').classList.remove('active')">&times;</span>
+            <!-- Placeholder for dynamic error message -->
+            {{ error }}
+        </div>
         
-        <label for="custom_url">Custom URL (optional):</label>
-        <input type="text" id="custom_url" name="custom_url" placeholder="Enter a custom URL (optional)">
+        <!-- Form for searching lyrics -->
+        <form method="post">
+            <!-- Label for the artist input field -->
+            <label for="artist">Enter artist name:</label>
+            <!-- Input field for entering the artist name -->
+            <input type="text" id="artist" name="artist" value="{{ artist_name }}" required>
+            <!-- Submit button for the form -->
+            <button type="submit">Search</button>
+        </form>
         
-        <input type="submit" value="Fetch Lyrics">
-    </form>
-
-    {% if lyrics_data %}
+        <!-- Table to display search results -->
+        {% if lyrics_data %}
         <table>
-            <tr>
-                <th>#</th>
-                <th>Artist</th>
-                <th>Song Title</th>
-                <th>Song URL</th>
-                <th>Lyrics</th>
-            </tr>
-            {% for item in lyrics_data %}
-            <tr>
-                <td>{{ item[0] }}</td>
-                <td>{{ item[1] }}</td>
-                <td>{{ item[2] }}</td>
-                <td><a href="{{ item[3] }}" target="_blank">Link</a></td>
-                <td>{{ item[4] }}</td>
-            </tr>
-            {% endfor %}
+            <thead>
+                <tr>
+                    <th>Song Title</th>
+                    <th>Song URL</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Loop through the lyrics data and display each song -->
+                {% for song_title, song_url in lyrics_data %}
+                <tr>
+                    <td>{{ song_title }}</td>
+                    <!-- Link to view the lyrics -->
+                    <td><a href="{{ song_url }}" target="_blank">View Lyrics</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
-    {% elif error %}
-        <p>Error: {{ error }}</p>
-    {% endif %}
+        {% endif %}
+    </div>
 </body>
 </html>
