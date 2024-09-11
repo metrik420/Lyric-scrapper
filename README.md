@@ -1,6 +1,6 @@
-# Lyric-scrapper
+# Scrappy Lyrics Search
 
-Lyric-scrapper is a Flask-based web application that allows you to search for song lyrics by artist name. It scrapes lyrics from AzLyrics.com and displays the results in a user-friendly interface.
+Scrappy Lyrics Search is a Flask-based web application that allows you to search for song lyrics by artist name. It scrapes lyrics from AzLyrics.com and displays the results in a user-friendly interface.
 
 ## Requirements
 
