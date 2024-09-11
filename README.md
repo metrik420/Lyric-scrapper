@@ -32,27 +32,7 @@ First, ensure you have Python 3.x installed. Open your terminal or command promp
    git clone https://github.com/metrik420/Lyric-scrapper.git
    ```
 
-2. **Create a Virtual Environment**
-
-   ```bash
-   python -m venv venv
-   ```
-
-3. **Activate the Virtual Environment**
-
-   - On Windows:
-
-     ```bash
-     venv\Scripts\activate
-     ```
-
-   - On macOS/Linux:
-
-     ```bash
-     source venv/bin/activate
-     ```
-
-4. **Install Dependencies**
+2. **Install Dependencies**
 
    ```bash
    pip install -r requirements.txt
@@ -61,7 +41,7 @@ First, ensure you have Python 3.x installed. Open your terminal or command promp
 5. **Run the Application**
 
    ```bash
-   python scrappy.py
+   python3 scrappy.py
    ```
 
    Open your web browser and go to `http://localhost:1990` to access the application.
