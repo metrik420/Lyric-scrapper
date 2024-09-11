@@ -27,6 +27,7 @@ First, ensure you have Python 3.x installed. Open your terminal or command promp
 1. **Clone the Repository**
 
    ```bash
+   mkdir Lyric-scrapper
    cd Lyric-scrapper
    git clone https://github.com/metrik420/Lyric-scrapper.git
    ```
