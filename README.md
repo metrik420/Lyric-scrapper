@@ -59,7 +59,7 @@ First, ensure you have Python 3.x installed. Open your terminal or command promp
 5. Lyrics Fetching
    - The app sends a GET request to AzLyrics, using BeautifulSoup to parse the HTML and extract song titles and corresponding URLs for lyrics.
 6. Robust Error Handling
-   -Handles potential HTTP errors or request exceptions. If an error occurs, it logs the issue and ensures the application continues running smoothly without crashing.
+   - Handles potential HTTP errors or request exceptions. If an error occurs, it logs the issue and ensures the application continues running smoothly without crashing.
 7. HTML Parsing for Song Data
    - The app extracts song titles and their corresponding URLs from tables with the class "table table-condensed", specifically targeting links containing /lyrics/.
 8. Form Submission Handling
