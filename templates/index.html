@@ -17,6 +17,9 @@
         }
 
         /* Container styling for the main content area */
+	.top_header{
+	    text-align:center;	
+	}
         .container {
             width: 90%; /* Width relative to the viewport width */
             max-width: 1200px; /* Maximum width */
@@ -164,9 +167,46 @@
                 transform: translateY(0); /* End at normal position */
             }
         }
+	/* Footer Styles */
+	footer {
+	    color: #333;
+	    padding: 20px 0;
+	    text-align: center;
+	}
+
+	.footer-content p {
+	    margin: 0;
+	    font-size: 14px;
+	}
+
+	.footer-content a {
+	    color: #ff9900;
+	    text-decoration: none;
+	}
+
+	.footer-content a:hover {
+	    text-decoration: underline;
+	}	
+	.footer-content p {
+	    margin: 0;
+	    font-size: 14px;
+	}
+
+	.footer-content a {
+	    color: #ff9900;
+	    text-decoration: none;
+	}
+	
+	.footer-content a:hover {
+	    text-decoration: underline;
+	}
     </style>
 </head>
 <body>
+    <!-- Header content container -->
+    <div class="container top_header">		
+	<h1>Scrappy Lyrics Search</h1>
+    </div>
     <!-- Main content container -->
     <div class="container">
         <!-- Error message banner -->
@@ -176,7 +216,6 @@
             <!-- Placeholder for dynamic error message -->
             {{ error }}
         </div>
-        
         <!-- Form for searching lyrics -->
         <form method="post">
             <!-- Label for the artist input field -->
@@ -209,5 +248,12 @@
         </table>
         {% endif %}
     </div>
+     <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <p>&copy; 2024 Scrappy Lyrics Search. All rights reserved.</p>
+            <p>Designed and developed by <a href="https://metrikcorp.com" target="_blank">Metrikcorp</a></p>
+        </div>
+    </footer>
 </body>
 </html>
