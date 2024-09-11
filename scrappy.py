@@ -47,7 +47,10 @@ def fetch_lyrics(url):
                         # Filter out links that are not related to lyrics
                         if "/lyrics/" in song_url:
                             # Construct the full URL for the song
-                            full_url = f"https://www.azlyrics.com{song_url}"
+                            if not song_url.startswith('http'):
+                                full_url = f"https://www.azlyrics.com{song_url}"
+                            else:
+                                full_url = song_url
                             # Add the song title and URL as a tuple to the set
                             table_data.add((song_title, full_url))
 
