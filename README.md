@@ -48,8 +48,29 @@ First, ensure you have Python 3.x installed. Open your terminal or command promp
 
 ## List of Features
 
-- Search for song lyrics by artist name
-- Display search results in a table format
-- View lyrics in a new tab
-- User-friendly interface with responsive design
-- Error handling with a sticky banner for error messages
+1. Flask Application Setup
+   - The app is built using Flask and runs on 0.0.0.0:1990 with debugging enabled. It can be accessed by devices on the same network.
+2. User-Agent Randomization
+   - To avoid detection as a bot, the application uses a list of randomized User-Agent strings, ensuring each request simulates traffic from different browsers.
+3. Human-like Request Delays
+   - The fetch_lyrics function introduces a random delay (2 to 5 seconds) between requests, mimicking human browsing behavior and reducing the chances of being blocked by the website.
+4. Dynamic Search URL Generation
+   - Upon form submission, the artist's name is encoded and incorporated into the AzLyrics search URL, dynamically generating the search query for lyrics retrieval.
+5. Lyrics Fetching
+   - The app sends a GET request to AzLyrics, using BeautifulSoup to parse the HTML and extract song titles and corresponding URLs for lyrics.
+6. Robust Error Handling
+   -Handles potential HTTP errors or request exceptions. If an error occurs, it logs the issue and ensures the application continues running smoothly without crashing.
+7. HTML Parsing for Song Data
+   - The app extracts song titles and their corresponding URLs from tables with the class "table table-condensed", specifically targeting links containing /lyrics/.
+8. Form Submission Handling
+   - The application supports both GET and POST requests:
+   - POST: When a user submits an artist name, it retrieves and displays the lyrics.
+   - GET: Renders the default search form for user input.
+9. Dynamic Template Rendering
+    - The index.html template is dynamically updated based on user input. It displays search results (song titles and lyrics) or appropriate error messages if the search fails.
+10. Clean URL Construction
+    - For each song title, the app ensures the URL is fully constructed, appending the domain (https://www.azlyrics.com) when necessary, ensuring all links work correctly.
+11. Search Error Messaging
+    - If no songs are found or an error occurs during the fetch process, a user-friendly error message is displayed, helping guide the user on potential issues.
+      
+This Flask application allows users to search for song lyrics by artist, dynamically generates the search results, and employs multiple techniques to avoid detection by anti-scraping mechanisms.
