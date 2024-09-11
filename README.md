@@ -27,8 +27,8 @@ First, ensure you have Python 3.x installed. Open your terminal or command promp
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/metrik420/Lyric-scrapper.git
    cd Lyric-scrapper
+   git clone https://github.com/metrik420/Lyric-scrapper.git
    ```
 
 2. **Create a Virtual Environment**
