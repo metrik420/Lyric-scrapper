@@ -1,39 +1,72 @@
-# Lyric Scraper Flask App
+# Lyric-scrapper
 
-This Python Flask application allows users to search for song lyrics using a simple web interface.
+Lyric-scrapper is a Flask-based web application that allows you to search for song lyrics by artist name. It scrapes lyrics from AzLyrics.com and displays the results in a user-friendly interface.
 
 ## Requirements
 
-- Python 3.6+
+- Python 3.x
 - Flask
 - Requests
 - BeautifulSoup4
 
 ## File Structure
-lyric-scraper/
 
-├── scrappy.py
+```
+Lyric-scrapper/
+│
+├── scrappy.py            # Flask application script
+├── requirements.txt      # List of dependencies
+└── templates/
+    └── index.html        # HTML template for the web application
+```
 
-├── requirements.txt
+## Installation
 
-├── templates/
+1. **Clone the Repository**
 
-│   └── index.html
+   ```bash
+   git clone https://github.com/metrik420/Lyric-scrapper.git
+   cd Lyric-scrapper
+   ```
 
-└── README.md
+2. **Create a Virtual Environment**
 
-## Installation 
+   ```bash
+   python -m venv venv
+   ```
 
-Instructions:
-Ensure the user has Python 3 installed.
+3. **Activate the Virtual Environment**
 
-After downloading or cloning the project, the user needs to run:
+   - On Windows:
 
-pip install -r requirements.txt
+     ```bash
+     venv\Scripts\activate
+     ```
 
-Then, they can run the application using:
+   - On macOS/Linux:
 
-python3 scrappy.py
+     ```bash
+     source venv/bin/activate
+     ```
 
-The user can now navigate to http://127.0.0.1:1990 or http://Your_Devices_IP to access the web interface. 
+4. **Install Dependencies**
 
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+5. **Run the Application**
+
+   ```bash
+   python scrappy.py
+   ```
+
+   Open your web browser and go to `http://localhost:1990` to access the application.
+
+## List of Features
+
+- Search for song lyrics by artist name
+- Display search results in a table format
+- View lyrics in a new tab
+- User-friendly interface with responsive design
+- Error handling with a sticky banner for error messages
